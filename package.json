@@ -1,0 +1,38 @@
+{
+  "name": "electrician",
+  "version": "1.0.0",
+  "description": "An electrician who will manage how electric current should be flowed.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "author": "jitta",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "bull": "^3.3.10",
+    "bull-arena": "^2.4.2",
+    "cors": "^2.8.4",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "ioredis": "^3.2.2",
+    "lodash": "^4.17.5",
+    "lodash.filter": "^4.6.0",
+    "lodash.includes": "^4.3.0",
+    "lodash.range": "^3.2.0",
+    "mockdate": "^2.0.2",
+    "moment": "^2.22.0",
+    "mongoose": "^5.0.14",
+    "node-schedule-tz": "^1.2.1-4",
+    "request-promise": "^4.2.2",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {
+    "jest": "^22.4.4",
+    "jest-cli": "^22.4.3"
+  }
+}
