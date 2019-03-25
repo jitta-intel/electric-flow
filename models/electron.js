@@ -13,6 +13,7 @@ const electronSchema = new mongoose.Schema({
   }
    */
   priority: Number,
+  abort: Boolean,
   markedAsComplete: Boolean,
   resistorOutput: {},
   retry: {}

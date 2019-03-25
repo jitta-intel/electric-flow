@@ -66,11 +66,19 @@ class Electrician {
     throw new Error(`Mainboard:${boardName} is not registered.`)
   }
 
+  async abort(boardName, parentId) {
+    if (this.mainBoard[boardName]) {
+      return this.mainBoard[boardName].abortDischarge(payload)
+    }
+    throw new Error(`Mainboard:${boardName} is not registered.`)
+  }
+
   async cleanQueue() {
     return Promise.each(Object.keys(this.mainBoard), (boardName) => {
       return this.mainBoard[boardName].cleanQueue(this.queueRetention)
     })
   }
+  
 
 
   async findDischarge(dischargeId) {

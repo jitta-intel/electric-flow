@@ -61,6 +61,13 @@ class MainBoard {
       const discharge = await this.DischargeModel.findOne({ _id: dischargeId }).lean()
       const { parentId } = discharge
 
+      // if abort, stop discharging next board 
+      const mainDischarge = await this.DischargeModel.findOne({ _id: parentId }).lean()
+      if (mainDischarge.status === 'aborted') {
+        debug('abort complete')
+        return true
+      }
+
       if (discharge.status === 'complete') {
         const discharging = await this.dischargeIfReady(parentId)
         if (!discharging) {
@@ -82,6 +89,22 @@ class MainBoard {
     return activeSd
   }
 
+  async abortDischarge(parentId) {
+    await this.DischargeModel.update({ _id: parentId }, { status: 'aborted' })
+    const mainDischarge = await this.DischargeModel.findOne({ _id: parentId })
+    await this.notifySlack('abort', mainDischarge)
+    // get active discharge
+    const activeDischarge = await this.isActiveSubDischarge(parentId)
+    if (activeDischarge) {
+      // abort activeDischarge and all electron
+      const circuitBoard = this.getCircuitBoardByName(activeDischarge.boardName)
+      await circuitBoard.abort(activeDischarge._id)
+      console.log(` abord cb:${circuitBoard} with id ${activeDischarge._id} `)
+    }
+    return mainDischarge
+  }
+
+  // done main discharge, complete(failed) main discharge
   async doneDischarge(parentId) {
     let status
     let subDischarges = await this.DischargeModel.find({ parentId }).lean()
@@ -125,6 +148,9 @@ class MainBoard {
     } else if (type === 'retry') {
       opts.color = 'warning'
       await this.slack.send(`retry`, opts)
+    } else if (type === 'abort') {
+      opts.color = 'danger'
+      await this.slack.send(`abort `, opts)
     }
   }
 
@@ -192,6 +218,7 @@ class MainBoard {
     return discharged
   }
 
+  // find discharges with stat
   async findDischarges(query = {}, fields = {}, sort = {}) {
     query.boardName = this.name
     sort.createdAt = -1
@@ -230,6 +257,7 @@ class MainBoard {
     subDischarges = Promise.map(subDischarges, async (discharge) => {
       const cb = this.getCircuitBoardByName(discharge.boardName)
       discharge.stats = await cb.stat.getSummary(discharge._id)
+      discharge.powerSource.queuePath = `/${cb.name}/${cb.name}:power_source`
       if (resistorStat) {
         discharge.resistorStats = await Promise.map(cb.resistors, async (r) => {
           const stats = await r.stat.getSummary(discharge._id)

@@ -8,7 +8,7 @@ electrician.register(mb1)
 //e:5afd154e092aa17313415fca
 const cbName = 'afterImportBoard'
 const resistorName = 'import1'
-const electronId = '5b50383f8a2e07c8bbed4c6e'
+const electronId = '5c94650c392f265a1aac6f29'
 // ObjectId("5b1a05bf8480af761081dbc6")
 const reply = {
   dd: `dummy reply for ${electronId}`

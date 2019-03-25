@@ -74,7 +74,8 @@ class RedisStat {
       failed,
       skipped,
       isAllDone: false,
-      completeRatio: (complete / (total - skipped)) || 0
+      completeRatio: (complete / (total - skipped)) || 0,
+      probableComplete: total - skipped - failed
     }
     if (summary.total > 0) {
       summary.isAllDone = total === (complete + failed + skipped)

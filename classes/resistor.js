@@ -1,4 +1,4 @@
-const get = require('lodash.get')
+const get = require('lodash').get
 const moment = require('moment')
 const schedule = require('node-schedule-tz')
 const debug = require('debug')('electrician:resistor')

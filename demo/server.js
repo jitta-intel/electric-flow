@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const api = require('../api/api')
 
 const electrician = require('./electrician')
-const ElectricianUI = require('../../electrician-ui')
+const ElectricianUI = require('../../electric-flow-ui')
 
 const mb1 = require('./mainBoard')
 

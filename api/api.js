@@ -19,6 +19,12 @@ module.exports = (electrician) => {
     return res.json(result[0])
   })
 
+  app.post('/mainboard/:name/abort/:id', async (req, res) => {
+    const mb = electrician.getMainBoard(req.params.name)
+    const result = await mb.abortDischarge(req.params.id)
+    return res.json(result)
+  })
+
   app.get('/mainboard/:name/discharges', async (req, res) => {
     let { start_date: startDate, end_date: endDate } = req.query
     const mb = electrician.getMainBoard(req.params.name)

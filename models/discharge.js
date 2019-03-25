@@ -11,7 +11,7 @@ const dischargeSchema = new mongoose.Schema({
   opts: {
     priority: Number
   },
-  status: { type: String, enum: ['waiting', 'active', 'inactive', 'complete', 'failed'], default: 'waiting' },
+  status: { type: String, enum: ['waiting', 'active', 'inactive', 'complete', 'failed', 'aborted'], default: 'waiting' },
   retry: [{
     date: { type: Date, default: Date.now },
     no: Number,

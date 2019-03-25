@@ -77,6 +77,11 @@ class CircuitBoard {
     this.powerSource.listen(
       // complete
       async (discharge, electrons, next) => {
+        // check abort before start resistor flow
+        const dischargeObj = await this.DischargeModel.findOne({ _id: discharge._id })
+        if (dischargeObj.status === 'aborted') {
+          return true
+        }
         this.initAndPushElectrons(discharge, electrons, next)
       },
       (discharge, error) => {
@@ -91,11 +96,17 @@ class CircuitBoard {
         // complete
         async (electron, nexts) => {
           await resistor.stat.update(electron.dischargeId, electron._id, 'complete')
+          // check abort
+          if (electron.abort) {
+            return true
+          }
           return this.checkAndPushElectron(electron, nexts)
         },
         // failed
         async (electron, error) => {
+          // save failed id to resistor
           await resistor.stat.update(electron.dischargeId, electron._id, 'failed')
+           // save failed id to cb
           await this.stat.update(electron.dischargeId, electron._id, resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED)
           return this.checkDischargeIsDone(electron.dischargeId)
         }
@@ -269,6 +280,15 @@ class CircuitBoard {
     // TODO: push to powerSource queue
     this.powerSource.push(dischargeObj)
     return dischargeObj
+  }
+
+  async abort(_id) {
+    const dischargeObj = await this.DischargeModel.findOne({
+      _id
+    })
+    dischargeObj.status = 'aborted'
+    await dischargeObj.save()
+    return this.ElectronModel.updateMany({ dischargeId: dischargeObj._id }, { $set: { abort: true } })
   }
 
   async retryDischarge(dischargeId, { type }) {

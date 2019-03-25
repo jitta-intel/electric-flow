@@ -57,6 +57,57 @@ describe('MainBoard', () => {
     })
   })
 
+  describe('#abortDischarge', () => {
+    const mockMainboard = (mb) => {
+      mb.DischargeModel = {
+        find: () => mb.DischargeModel,
+        lean: jest.fn(),
+        update: jest.fn()
+      }
+      mb.notifySlack = jest.fn()
+    }
+
+    test('should abort discharge when no active discharge', async () => {
+      const mb = new MainBoard({ name: 'test' })
+      mockMainboard(mb)
+      const mainDischarge = {
+        id: 'md1'
+      }
+      mb.DischargeModel.findOne = jest.fn(() => mainDischarge)
+      mb.isActiveSubDischarge = jest.fn(() => null)
+      mb.getCircuitBoardByName = jest.fn()
+
+      const result = await mb.abortDischarge('md1')
+      expect(mb.notifySlack).toHaveBeenCalledWith('abort', mainDischarge)
+      expect(mb.getCircuitBoardByName).not.toHaveBeenCalled()
+      expect(result).toEqual(mainDischarge)
+    })
+
+    test('should abort discharge and abort active subDischarge', async () => {
+      const mb = new MainBoard({ name: 'test' })
+      mockMainboard(mb)
+      const mainDischarge = {
+        id: 'md1'
+      }
+      const activeDischarge = {
+        _id: 'ad1',
+        boardName: 'b1',
+      }
+      const cb = {
+        name: 'b1',
+        abort: jest.fn(() => {})
+      }
+      mb.DischargeModel.findOne = jest.fn(() => mainDischarge)
+      mb.isActiveSubDischarge = jest.fn(() => activeDischarge)
+      mb.getCircuitBoardByName = jest.fn(() => cb)
+
+      const result = await mb.abortDischarge('md1')
+      expect(mb.notifySlack).toHaveBeenCalledWith('abort', mainDischarge)
+      expect(mb.getCircuitBoardByName).toHaveBeenCalledWith(activeDischarge.boardName)
+      expect(cb.abort).toHaveBeenCalledWith(activeDischarge._id)
+      expect(result).toEqual(mainDischarge)
+    })
+  })
 
   describe('#doneDischarge', () => {
     const mockMainboard = (mb) => {
