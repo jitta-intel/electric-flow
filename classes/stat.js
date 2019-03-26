@@ -24,6 +24,7 @@ class RedisStat {
     const activeKey = this.getKey(id, 'active')
     const failedKey = this.getKey(id, 'failed')
     const completeKey = this.getKey(id, 'complete')
+    const abortedKey = this.getKey(id, 'aborted')
     const markedAsCompleteKey = this.getKey(id, 'markedAsComplete')
     if (status === 'complete') {
       await this.redisClient.sadd(completeKey, memberId)
@@ -33,6 +34,8 @@ class RedisStat {
       await this.redisClient.srem(failedKey, memberId)
     } else if (status === 'failed') {
       await this.redisClient.sadd(failedKey, memberId)
+    } else if (status === 'aborted') {
+      await this.redisClient.sadd(abortedKey, memberId)
     } else if (status === 'active') {
       await this.redisClient.sadd(activeKey, memberId)
       // For retry case
@@ -58,6 +61,7 @@ class RedisStat {
   async getSummary(id) {
     const totalKey = this.getKey(id, 'total')
     const failedKey = this.getKey(id, 'failed')
+    const abortedKey = this.getKey(id, 'aborted')
     const completeKey = this.getKey(id, 'complete')
     const markedAsCompleteKey = this.getKey(id, 'markedAsComplete')
     const skippedKey = this.getKey(id, 'skipped')
@@ -66,12 +70,14 @@ class RedisStat {
     const skipped = Number(await this.redisClient.scard(skippedKey))
     const markedAsComplete = Number(await this.redisClient.scard(markedAsCompleteKey))
     const failed = Number(await this.redisClient.scard(failedKey))
+    const aborted = Number(await this.redisClient.scard(abortedKey))
     debug(`getStat ${this.prefix}:${id} total:${total} skipped:${skipped} complete:${complete}(marked:${markedAsComplete}) failed:${failed}, ${total === (complete+failed)}` )
     const summary = {
       total,
       complete,
       markedAsComplete,
       failed,
+      aborted, // aborted status 
       skipped,
       isAllDone: false,
       completeRatio: (complete / (total - skipped)) || 0,

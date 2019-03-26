@@ -1,6 +1,6 @@
 {
   "name": "electric-flow",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An electrician who will manage how electric current should be flowed.",
   "main": "index.js",
   "directories": {

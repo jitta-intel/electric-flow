@@ -248,8 +248,15 @@ class Resistor {
       // query electron data
       const electron = await this.queryElectronData(electronId)
       if (!electron) throw new Error(`Electron:${electronId} is missing.`)
-      await this.run(electron)
-      debug(`r:${this.name} consumed e:${electronId}.`)
+      // check abort before start working
+      if (electron.abort) {
+        // update abort stat
+        await this.stat.update(dischargeId, electronId, 'aborted')
+        debug(`r:${this.name} aborted e:${electronId}.`)
+      } else {
+        await this.run(electron)
+        debug(`r:${this.name} consumed e:${electronId}.`)
+      }
       return this.doneProcess(electron)
     })
 

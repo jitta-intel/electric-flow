@@ -95,11 +95,12 @@ class CircuitBoard {
       resistor.listen(
         // complete
         async (electron, nexts) => {
-          await resistor.stat.update(electron.dischargeId, electron._id, 'complete')
-          // check abort
+          // check abort before push to next resistor
           if (electron.abort) {
+            await this.stat.update(electron.dischargeId, electron._id, 'aborted')
             return true
           }
+          await resistor.stat.update(electron.dischargeId, electron._id, 'complete')
           return this.checkAndPushElectron(electron, nexts)
         },
         // failed
