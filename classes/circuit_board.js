@@ -7,6 +7,8 @@ const Stat = require('./stat')
 const _ = require('lodash')
 const debug = require('debug')('electrician:circuit_board')
 const resistorConstants = require('../constants/resistor')
+const PowerSource = require('./power_source')
+
 
 const DEFAULT_COMPLETE_THRESHOLD = 0.9
 
@@ -121,6 +123,14 @@ class CircuitBoard {
 
   addResistor(resistor) {
     this.resistors.push(resistor)
+  }
+
+  // shortcut for single task resistor
+  initSingleTaskWithResistor(resistor) {
+    this.usePowerSource(new PowerSource({
+      next: resistor.name
+    }))
+    this.addResistor(resistor)
   }
 
   static checkResistorDependencies(resistor, allResistors) {

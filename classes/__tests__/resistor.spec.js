@@ -153,7 +153,7 @@ describe('Resistor', () => {
       setTimeout(() => {
         expect(r.updateRetry).toHaveBeenCalledWith(electron)
         expect(job.retry).toHaveBeenCalled()
-      }, 501)
+      }, 505)
     })
 
     test('should not call retry before retryDelay', () => {
@@ -164,7 +164,7 @@ describe('Resistor', () => {
         _id: 'e1'
       }
       const r = new Resistor({ retryDelay: 500 })
-      // mockResistor(r)
+      mockResistor(r)
       r.shouldRetry = jest.fn(() => true)
       r.retryIfAvailable(job, electron)
       setTimeout(() => {
@@ -321,6 +321,7 @@ describe('Resistor', () => {
 
       expect(rs.queue.process).toHaveBeenCalled()
       expect(rs.listenReply).toHaveBeenCalledWith(nextFn, failedFn)
+      rs.handshakeTimeoutCleaner.cancel()
     })
 
     test('should register function to queue and trigger when  job is coming', async () => {

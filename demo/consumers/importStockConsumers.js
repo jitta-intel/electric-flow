@@ -1,3 +1,6 @@
+const fail = false
+const forceComplete = true
+
 const createStockElectricCurrent = async () => {
   const sampleStocks = [{
     exchange: 'BKK',
@@ -5,18 +8,6 @@ const createStockElectricCurrent = async () => {
   }, {
     exchange: 'BKK',
     symbol: 'SCP'
-  // }, {
-  //   exchange: 'BKK',
-  //   symbol: 'HMPRO'
-  // }, {
-  //   exchange: 'BKK',
-  //   symbol: 'HMPRO'
-  // }, {
-  //   exchange: 'BKK',
-  //   symbol: 'HMPRO'
-  // }, {
-  //   exchange: 'BKK',
-  //   symbol: 'HMPRO'
   }, {
     exchange: 'BKK',
     symbol: 'HMPRO'
@@ -33,8 +24,34 @@ const createStockElectricCurrent = async () => {
     exchange: 'BKK',
     symbol: 'HMPRO'
   }, {
+  // result controlled
     exchange: 'BKK',
-    symbol: 'HMPRO'
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
+  }, {
+    exchange: 'BKK',
+    symbol: 'HMPRO',
+    fail,
   }]
   return new Promise((res, reject) => setTimeout(() => {
     // return reject(new Error('force power source error '))
@@ -53,8 +70,11 @@ const updateFinancial = async (payload) => {
 }
 
 const updateInterdays = async (payload) => {
-  // throw new Error('throw update error')
-  return new Promise(res => setTimeout(res, 1000))
+  console.log('update unterday ', payload)
+  if (payload.data.fail && !forceComplete) {
+    throw new Error('throw update error')
+  }
+  return new Promise(res => setTimeout(res, 10000))
   // return {
   //   payload,
   //   result: 'updateInterdays'

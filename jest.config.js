@@ -1,5 +1,6 @@
 module.exports = {
   verbose: true,
+  testEnvironment: 'node',
   collectCoverageFrom: [
     'packages/**/*.js',
     '!**/**.data.js',

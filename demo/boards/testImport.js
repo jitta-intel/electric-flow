@@ -3,7 +3,8 @@ const importStockConsumer = require('../consumers/importStockConsumers')
 
 
 const importStockBoard = new CircuitBoard({
-  name: 'importStockBoard'
+  name: 'importStockBoard',
+  completeThreshold: 0.7
 })
 
 importStockBoard.usePowerSource(new PowerSource({

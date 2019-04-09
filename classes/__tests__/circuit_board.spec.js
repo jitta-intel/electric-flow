@@ -1,5 +1,6 @@
 const redis = require('ioredis')
 const CircuitBoard = require('../circuit_board')
+const Resistor = require('../resistor')
 const resistorConstants = require('../../constants/resistor')
 
 describe('CircuitBoard', () => {
@@ -97,6 +98,25 @@ describe('CircuitBoard', () => {
       expect(result).toEqual({ status: false, errors: [
         new Error(`Resistor 'rs5' is missing.`)
       ]})
+    })
+  })
+
+
+  describe('#initSingleTaskWithResistor', () => {
+    test('should add resistor with single task powersource', () => {
+      const cb = new CircuitBoard({
+        name: 'test'
+      })
+
+      const resistor = new Resistor({
+        name: 'rs1',
+        next: 'ground'
+      })
+      cb.initSingleTaskWithResistor(resistor)
+
+      expect(cb.powerSource).toHaveProperty('next', resistor.name)
+      expect(cb.resistors).toHaveLength(1)
+      expect(cb.resistors[0]).toEqual(resistor)
     })
   })
 
