@@ -98,6 +98,14 @@ class Electrician {
     })
     return arena({ queues }, { basePath })
   }
+
+  applyApiMiddleware({ app, basePath = '' }) {
+    this.basePath = basePath
+    this.apiPath = `${basePath}/api`
+    this.arenaPath = `${basePath}/arena`
+    app.use(this.apiPath, api(this))
+    app.use(this.getArenaUI(this.arenaPath))
+  }
 }
 
 
