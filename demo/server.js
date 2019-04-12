@@ -22,7 +22,7 @@ server.use(cors())
 
 
 electricFlow.applyApiMiddleware({ app: server, basePath: '' })
-ElectricFlowUI.applyMiddleware({ electricFlow, app: server })
+ElectricFlowUI.applyMiddleware({ electricFlow, app: server, options: { appName: 'Demo' } })
 
 
 server.listen(3000, () => console.log('Example app listening on port 3000!'))
