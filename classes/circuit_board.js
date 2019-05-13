@@ -53,6 +53,14 @@ class CircuitBoard {
     this.stat = new Stat({ prefix: `cb:${this.name}`, redisUrl: statsRedisUrl })
   }
 
+  async close() {
+    if (this.stat) this.stat.close()
+    debug(`close circuit board ${this.name}`)
+    if (this.redlock) await this.redlock.quit()
+    if (this.powerSource) await this.powerSource.close()
+    return Promise.each(this.resistors, async (resistor) => resistor.close())
+  }
+
   setQueue({ redisUrl }) {
     const createQueue = (resistorName) => {
       this.queueList.push({

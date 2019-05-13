@@ -10,7 +10,7 @@ required bull and arena ui for bull queue.
 ```js
 const ElectricFlow = require('electric-flow')
 
-const electrician = new Electrician({
+const electricFlow = new ElectricFlow({
   mongoUrl: 'mongodb://localhost:27017/electric-flow',
   redisUrl: 'redis://localhost:6379',
   statsRedisUrl: 'redis://localhost:6379/1',
@@ -21,6 +21,10 @@ const electrician = new Electrician({
     username: 'Electric-bot'
   }
 })
+const mainboard = new ElectricFlow.MainBoard({})
+electricFlow.register(mainboard)
+// init all mainboard connection
+electricFlow.start()
 ```
 
 The `settings` fields are:
@@ -35,6 +39,17 @@ The `settings` fields are:
   - `username`: string, slack sender's name to send noti.
 
 
+### How to start worker ###
+```js
+const ElectricFlow = require('electric-flow')
+
+const electricFlow = new ElectricFlow({})
+
+const mainboard = new ElectricFlow.MainBoard({})
+electrician.register(mainboard)
+// init all mainboard connection and worker
+electrician.worker()
+```
 
 
 ### How to apply middleware for api

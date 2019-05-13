@@ -40,6 +40,11 @@ class PowerSource {
     return electrons
   }
 
+  async close() {
+    debug(`close powerSource ${this.name}`)
+    return this.queue ? this.queue.close() : true
+  }
+
   async setupQueue({ createQueue }) {
     this.queue = createQueue(`power_source`)
   }

@@ -11,6 +11,7 @@ class MainBoard {
     this.circuitBoards = []
     this.retryDelay = 20000
     this.retryLimit = 1
+    this.isStarted = false
   }
 
   // get All queues from every circuitBoard
@@ -43,10 +44,19 @@ class MainBoard {
     })
     this.DischargeModel = mongooseConnection.model('Discharge')
     this.ReplyModel = mongooseConnection.model('Reply')
+    this.isStarted = true
 
     const doneQueue = new Queue(`mainboard:${this.name}:done`, redisUrl)
     this.doneQueue = doneQueue
   }
+
+  async close() {
+    debug(`close mainboard ${this.name}`)
+    await Promise.each(this.circuitBoards, async (board) => board.close())
+    this.isStarted = false
+    return this.doneQueue ? this.doneQueue.close() : true
+  }
+
 
   listen() {
     debug(`mb:${this.name} is listening.`)
@@ -181,6 +191,7 @@ class MainBoard {
   }
 
   async discharge(payload, opts) {
+    if (this.isStarted === false) throw new Error(`Mainboard '${this.name}' haven't start.`)
     // create global Main discharge
     const mainDischarge = new this.DischargeModel({
       boardName: this.name,

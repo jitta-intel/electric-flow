@@ -10,6 +10,7 @@ const ElectricFlowUI = require('../../electric-flow-ui')
 const mb1 = require('./mainBoard')
 
 electricFlow.register(mb1)
+electricFlow.start()
 
 
 const server = express()

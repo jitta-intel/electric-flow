@@ -11,6 +11,10 @@ class RedisStat {
     this.customStatuses = customStatuses || []
   }
 
+  close() {
+    this.redisClient.disconnect()
+  }
+
   getKey(id, status) {
     return `${this.prefix}:${id}:${status}`
   }

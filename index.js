@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const arena = require('bull-arena')
 const Promise = require('bluebird')
+const debug = require('debug')('electric-flow')
 const { initModel } = require('./models')
 
 const MainBoard = require('./classes/main_board')
@@ -22,8 +23,6 @@ class Electrician {
     this.mongoUrl = mongoUrl
     this.redisUrl = redisUrl
     this.statsRedisUrl = statsRedisUrl || this.redisUrl
-    this.mongooseConnection = mongoose.createConnection(this.mongoUrl)
-    initModel(this.mongooseConnection)
     this.mainBoard = {}
     this.queueRetention = queueRetention || 2 * 24 * 60 * 60 * 1000
     this.slack = new Slack({
@@ -34,15 +33,39 @@ class Electrician {
     })
   }
 
-  // Register and init board
+  // Register board
   register(mainBoard) {
     this.mainBoard[mainBoard.name] = mainBoard
-    this.mainBoard[mainBoard.name].start({
-      mongooseConnection: this.mongooseConnection,
-      redisUrl: this.redisUrl,
-      statsRedisUrl: this.statsRedisUrl,
-      slack: this.slack
+  }
+
+  // init all board connection
+  async start() {
+    this.mongooseConnection = mongoose.createConnection(this.mongoUrl)
+    initModel(this.mongooseConnection)
+    const mbs = this.getMainBoards()
+    debug('ElectricFlow is running')
+    return Promise.each(mbs, (mb) => {
+      this.mainBoard[mb.name].start({
+        mongooseConnection: this.mongooseConnection,
+        redisUrl: this.redisUrl,
+        statsRedisUrl: this.statsRedisUrl,
+        slack: this.slack
+      })
     })
+  }
+
+  // close all board connection
+  async close() {
+    const mbs = this.getMainBoards()
+    debug('close mongo db')
+    await this.mongooseConnection.close()
+    debug(`close electricFlow`)
+    return Promise.each(mbs, ({ name }) => this.mainBoard[name].close())
+  }
+
+  async worker() {
+    await this.start()
+    return Object.keys(this.mainBoard).forEach(boardName => this.mainBoard[boardName].listen())
   }
 
   getMainBoard(name) {
@@ -85,11 +108,6 @@ class Electrician {
     const _id = mongoose.Types.ObjectId(dischargeId)
     return this.mongooseConnection.model('Discharge').findOne(_id)
   }
-
-  worker() {
-    Object.keys(this.mainBoard).forEach(boardName => this.mainBoard[boardName].listen())
-  }
-
 
   getArenaUI(basePath) {
     let queues = []

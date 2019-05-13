@@ -3,7 +3,7 @@ const PowerSource = require('../power_source')
 const electronSchema = require('../../models/electron')
 
 describe('PowerSource', () => {
-  describe.only('#generateElectrons', () => {
+  describe('#generateElectrons', () => {
     const ElectronModel = mongoose.model('Electron', electronSchema)
     ElectronModel.insertMany = jest.fn((els) => els)
 
@@ -45,6 +45,8 @@ describe('PowerSource', () => {
       }
       const ps = new PowerSource()
       ps.ElectronModel = {}
+      ps.updateActiveDischarge = jest.fn()
+      ps.updateCompleteDischarge = jest.fn()
       ps.generateElectrons = jest.fn(() => [electron])
       const result = await ps.start(discharge)
       expect(ps.generateElectrons).toHaveBeenCalledWith({
@@ -55,11 +57,25 @@ describe('PowerSource', () => {
     })
   })
 
+  describe('#close', () => {
+    test('should close connection', async () => {
+      const ps = new PowerSource()
+      ps.queue = {
+        close: jest.fn(async () => {})
+      }
+
+      await ps.close()
+      expect(ps.queue.close).toHaveBeenCalled()
+    })
+  })
+
   describe('#listen', () => {
     test('should listen to self queue', () => {
       const ps = new PowerSource()
+      ps.updateActiveDischarge = jest.fn()
       ps.queue = {
-        process: jest.fn()
+        process: jest.fn(),
+        on: jest.fn()
       }
       ps.listen()
       expect(ps.queue.process).toHaveBeenCalled()

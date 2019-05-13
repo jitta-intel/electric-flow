@@ -169,6 +169,7 @@ describe('MainBoard', () => {
 
     test('should create main discharge and call dischargeIfReady', async () => {
       const mb = new MainBoard({ name: 'test' })
+      mb.isStarted = true
       const payload = { market: 'TH' }
       mb.dischargeIfReady = jest.fn()
       mockDischargeModel(mb)
@@ -176,6 +177,14 @@ describe('MainBoard', () => {
       await mb.discharge(payload)
       expect(mb.dischargeIfReady).toHaveBeenCalledWith(mockDischargeId)
       expect(mb.notifySlack).toHaveBeenCalledWith('start', { _id: mockDischargeId })
+    })
+
+    test('should throw if mainboard havnt started yet', async () => {
+      const mb = new MainBoard({ name: 'test' })
+      const payload = { market: 'TH' }
+      mb.dischargeIfReady = jest.fn()
+
+      await expect(mb.discharge(payload)).rejects.toThrow('haven\'t start')
     })
   })
 
@@ -196,6 +205,7 @@ describe('MainBoard', () => {
 
     test('should discharge nothing if all children discharge is complete', async () => {
       const mb = new MainBoard({ name: 'test' })
+      mb.isStarted = true
       const b1 = {
         name: 'cb1',
         discharge: jest.fn()
@@ -215,6 +225,7 @@ describe('MainBoard', () => {
 
     test('should discharge board which no dependency and not complete', async () => {
       const mb = new MainBoard({ name: 'test' })
+      mb.isStarted = true
       const b1 = {
         name: 'cb1',
         discharge: jest.fn()

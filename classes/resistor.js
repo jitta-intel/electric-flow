@@ -60,6 +60,12 @@ class Resistor {
     })
   }
 
+  async close() {
+    if (this.stat) this.stat.close()
+    debug(`close resistor ${this.name}`)
+    return this.queue ? this.queue.close() : true
+  }
+
   async queryElectronData(electronId) {
     return this.ElectronModel.findOne({ _id: electronId })
   }

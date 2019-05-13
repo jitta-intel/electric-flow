@@ -59,6 +59,24 @@ describe('Resistor', () => {
     })
   })
 
+  describe('#close', () => {
+    test('should close connection', async () => {
+      const rs = new Resistor({})
+      const expectedQueue = {
+        q: 1,
+        on: jest.fn(),
+        close: jest.fn(async () => {})
+      }
+      const createQueue = jest.fn(() => (expectedQueue))
+      rs.setupQueue({ createQueue })
+      rs.stat = {
+        close: jest.fn()
+      }
+      await rs.close()
+      expect(expectedQueue.close).toHaveBeenCalled()
+      expect(rs.stat.close).toHaveBeenCalled()
+    })
+  })
 
   describe('#isHandshake', () => {
     test('should return true when type is handshake', () => {
