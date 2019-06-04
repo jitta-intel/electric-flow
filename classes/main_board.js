@@ -36,7 +36,7 @@ class MainBoard {
     throw new Error('Object is not CircuitBoard.')
   }
 
-  start({ mongooseConnection, redisUrl, statsRedisUrl, slack }) {
+  async start({ mongooseConnection, redisUrl, statsRedisUrl, slack }) {
     debug(`mb:${this.name} start.`)
     this.slack = slack
     this.circuitBoards.forEach((board) => {
@@ -48,6 +48,7 @@ class MainBoard {
 
     const doneQueue = new Queue(`mainboard:${this.name}:done`, redisUrl)
     this.doneQueue = doneQueue
+    return 
   }
 
   async close() {

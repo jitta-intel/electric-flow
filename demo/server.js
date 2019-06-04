@@ -10,20 +10,26 @@ const ElectricFlowUI = require('../../electric-flow-ui')
 const mb1 = require('./mainBoard')
 
 electricFlow.register(mb1)
-electricFlow.start()
 
 
-const server = express()
+startServer = async () => {
+  await electricFlow.start()
+  const server = express()
 
 
-server.use(bodyParser.urlencoded({ extended: false }))
-// parse application/json
-server.use(bodyParser.json())
-server.use(cors())
+  server.use(bodyParser.urlencoded({ extended: false }))
+  // parse application/json
+  server.use(bodyParser.json())
+  server.use(cors())
+  
+  
+  // setTimeout(() => {
+  electricFlow.applyApiMiddleware({ app: server, basePath: '' })
+  ElectricFlowUI.applyMiddleware({ electricFlow, app: server, options: { appName: 'Demo' } })
+  server.listen(3000, () => console.log('Example app listening on port 3000!'))
+  // }, 3000)
+  
+}
 
+startServer()
 
-electricFlow.applyApiMiddleware({ app: server, basePath: '' })
-ElectricFlowUI.applyMiddleware({ electricFlow, app: server, options: { appName: 'Demo' } })
-
-
-server.listen(3000, () => console.log('Example app listening on port 3000!'))
