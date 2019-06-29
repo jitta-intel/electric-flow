@@ -6,7 +6,7 @@ const electrician = new Electrician({
   statsRedisUrl: 'redis://localhost:6379/1',
   enableSlack: true,
   slack: {
-    webhookUrl: 'https://hooks.slack.com/services/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',
+    webhookUrl: 'https://hooks.slack.com/services/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8',
     channel: 'testbot',
     username: 'Electrician'
   }
