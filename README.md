@@ -16,7 +16,7 @@ const electricFlow = new ElectricFlow({
   statsRedisUrl: 'redis://localhost:6379/1',
   enableSlack: true,
   slack: {
-    webhookUrl: 'https://hooks.slack.com/services/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8',
+    webhookUrl: 'https://hooks.slack.com/services/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9',
     channel: 'testbot',
     username: 'Electric-bot'
   }
