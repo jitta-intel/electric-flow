@@ -72,3 +72,54 @@ The `settings` fields are:
 
 - `app`: Express app.
 - `basePath`: object, basePath for api and arena ui.
+
+
+### Shortcut for single task circuitboard
+```js
+
+const singleTaskBoard = new CircuitBoard({
+  name: 'singleTask'
+})
+
+singleTaskBoard.initSingleTaskWithResistor(new Resistor({
+  name: 'resistor1',
+  consume: (e) => {
+    // throw new Error('throw update error')
+    return { result: 'sg1 result' }
+  },
+  next: 'ground'
+}))
+```
+
+### create powersource, resistor and circuitboard
+```js
+
+const cboard = new CircuitBoard({
+  name: 'cboard'
+})
+
+// create powersource and add to circuitboard
+cboard.usePowerSource(new PowerSource({
+  generate: () => ([{}, {}, {}]), // generate 3 task
+  next: 'resistor1' // redirect to resistor with name
+}))
+
+// create resistor and add to circuitboard
+cboard.addResistor(new Resistor({
+  name: 'resistor1',
+  consume: async (e) => {
+    // throw new Error('throw update error')
+    return { result: 'result1' }
+  },
+  next: 'resistor2' // redirect to resistor 2 after complete
+}))
+
+
+cboard.addResistor(new Resistor({
+  name: 'resistor2',
+  consume: (e) => {
+    return { result: 'result2' }
+  },
+  next: 'ground' // complete circuit with ground
+}))
+```

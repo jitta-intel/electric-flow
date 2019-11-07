@@ -24,7 +24,9 @@ class Resistor {
     startDelay
   } = {}) {
     this.name = name
+    this.parentName = null
     this.consume = consume
+    this.connected = false
     this.type = type
     this.timeout = timeout || constants.RESISTOR_DEFAULT_TIMEOUT
     this.dependencies = dependencies || null
@@ -47,6 +49,14 @@ class Resistor {
     this.startDelay = startDelay || 0
     this.retryLimit = retryLimit || constants.RESISTOR_RETRY_LIMIT
     this.retryDelay = retryDelay || constants.RESISTOR_RETRY_DELAY
+  }
+
+  setParentName(parentName) {
+    if (this.connected) {
+      throw new Error(`Resistor:${this.name} can not connect to multiple Circuitboard or reuse. Please create new Resistor.'`)
+    }
+    this.parentName = parentName
+    this.connected = true
   }
 
   setConnection({ mongooseConnection, statsRedisUrl }) {
@@ -247,7 +257,7 @@ class Resistor {
   listen(nextFunc, failedFunc) {
     this.nextFunc = nextFunc
     this.failedFunc = failedFunc
-    debug('add listshould call consume function and update electronener for ', this.name)
+    debug( this.name, ' is listening.',)
     this.queue.process(async (job) => {
       const { _id: electronId, dischargeId } = job.data
       this.stat.update(dischargeId, electronId, 'consumed')

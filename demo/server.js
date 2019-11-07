@@ -8,8 +8,10 @@ const electricFlow = require('./electrician')
 const ElectricFlowUI = require('../../electric-flow-ui')
 
 const mb1 = require('./mainBoard')
-
 electricFlow.register(mb1)
+
+// const mb2 = require('./mainBoard2')
+// electricFlow.register(mb2)
 
 
 startServer = async () => {
@@ -17,9 +19,8 @@ startServer = async () => {
   const server = express()
 
 
-  server.use(bodyParser.urlencoded({ extended: false }))
-  // parse application/json
-  server.use(bodyParser.json())
+  //server.use(bodyParser.urlencoded({ extended: false }))
+
   server.use(cors())
   
   

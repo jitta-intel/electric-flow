@@ -31,6 +31,8 @@ class MainBoard {
 
   addCircuitBoard(board) {
     if (board instanceof CircuitBoard) {
+      // prevent single circuitBoard subscribe to multiple mainboard
+      board.setParentName(this.name)
       return this.circuitBoards.push(board)
     }
     throw new Error('Object is not CircuitBoard.')

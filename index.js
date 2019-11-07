@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const arena = require('bull-arena')
 const Promise = require('bluebird')
+const bodyParser = require('body-parser')
 const debug = require('debug')('electric-flow')
 const { initModel } = require('./models')
 
@@ -121,6 +122,8 @@ class Electrician {
     this.basePath = basePath
     this.apiPath = `${basePath}/api`
     this.arenaPath = `${basePath}/arena`
+    // parse application/json
+    app.use(bodyParser.json())
     app.use(this.apiPath, api(this))
     app.use(this.getArenaUI(this.arenaPath))
   }

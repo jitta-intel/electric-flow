@@ -8,19 +8,22 @@
   },
   "scripts": {
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "demo": "DEBUG=electric* nodemon -r dotenv/config ./demo/server",
+    "worker:demo": "DEBUG=electric* nodemon -r dotenv/config ./demo/worker"
   },
   "author": "jitta",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "body-parser": "^1.19.0",
     "bull": "^3.3.10",
     "bull-arena": "^2.6.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
     "express": "^4.16.3",
     "ioredis": "^3.2.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "lodash.filter": "^4.6.0",
     "lodash.includes": "^4.3.0",
     "lodash.range": "^3.2.0",
@@ -33,7 +36,7 @@
     "winston": "^2.4.1"
   },
   "devDependencies": {
-    "dotenv": "^8.0.0",
+    "dotenv": "^8.2.0",
     "jest": "^22.4.4",
     "jest-cli": "^22.4.3"
   }

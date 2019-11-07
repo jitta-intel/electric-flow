@@ -17,14 +17,23 @@ class CircuitBoard {
     this.name = name
     this.powerSource = null
     this.redlock = null
+    this.connected = false
     this.resistors = []
     this.queues = {}
     this.queueList = []
     this.completeThreshold = completeThreshold || DEFAULT_COMPLETE_THRESHOLD
   }
 
+  setParentName(parentName) {
+    if (this.connected) {
+      throw new Error(`CircuitBoard:${this.name} can not connect to multiple Mainboard or reuse. Please create new CircuitBoard.'`)
+    }
+    this.parentName = parentName
+    this.connected = true
+  }
+
   getQueueName(resistorName) {
-    return `${this.name}:${resistorName}`
+    return `${this.parentName}:${this.name}:${resistorName}`
   }
 
   addDependency(dependentBoard) {
@@ -68,6 +77,7 @@ class CircuitBoard {
         url: redisUrl,
         hostId: this.name
       })
+      debug(`create queue ${this.getQueueName(resistorName)}`)
       return new Queue(`${this.getQueueName(resistorName)}`, redisUrl)
     }
     this.powerSource.setupQueue({ createQueue })
@@ -130,6 +140,7 @@ class CircuitBoard {
   }
 
   addResistor(resistor) {
+    resistor.setParentName(this.name)
     this.resistors.push(resistor)
   }
 

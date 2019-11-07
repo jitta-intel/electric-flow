@@ -14,13 +14,16 @@ singleTaskBoard.initSingleTaskWithResistor(new Resistor({
   next: 'sg2'
 }))
 
-
-singleTaskBoard.addResistor(new Resistor({
+const resistor = new Resistor({
   name: 'sg2',
   consume: (e) => {
     return { result: 'sg2 result' }
   },
   next: 'ground'
-}))
+})
+
+singleTaskBoard.addResistor(resistor)
+// testing reuse resistor error
+// singleTaskBoard.addResistor(resistor)
 
 module.exports = singleTaskBoard
