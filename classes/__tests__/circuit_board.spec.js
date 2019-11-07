@@ -129,7 +129,7 @@ describe('CircuitBoard', () => {
       CircuitBoard.checkResistorDependencies.mockClear()
     })
 
-    test('should return error when no resistors in board', () => {
+    test('should return error when no powersource in board', () => {
       const cb = new CircuitBoard('test')
       expect(cb.checkAllDependencies()).toEqual(new Error('No PowerSource'))
     })
@@ -140,12 +140,13 @@ describe('CircuitBoard', () => {
       expect(cb.checkAllDependencies()).toEqual(new Error('No Resistor'))
     })
 
-    test('should return error when no resistors in board', () => {
+    test('should return error when no resistors connecting to ground', () => {
       const cb = new CircuitBoard('test')
       cb.usePowerSource({ name: 'ps' })
       cb.addResistor({
         name: 'rs1',
-        next: 'rs2'
+        next: 'rs2',
+        setParentName: jest.fn()
       })
       expect(cb.checkAllDependencies()).toEqual(new Error('No Resistor connect to ground.'))
     })
@@ -250,10 +251,10 @@ describe('CircuitBoard', () => {
 
     test('should throw when electron._id is not exists', async () => {
       mockElectron(circuitBoard, null)
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['rs2']
-      })
+      }))
       const electron = {
         _id: 'e1',
       }
@@ -263,10 +264,10 @@ describe('CircuitBoard', () => {
     })
 
     test('should call ground when electron is marked as complete, and update skipped all the way till ground', async () => {
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['rs2']
-      })
+      }))
       const electron = {
         _id: 'e1',
         markedAsComplete: true,
@@ -283,10 +284,10 @@ describe('CircuitBoard', () => {
     })
 
     test('should call ground when target is ground', async () => {
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['rs2']
-      })
+      }))
       const electron = {
         _id: 'e1',
       }
@@ -300,10 +301,10 @@ describe('CircuitBoard', () => {
     })
 
     test('should not push resistor when electron is not ready', async() => {
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['rs2']
-      })
+      }))
       const electron = {
         _id: 'e1',
       }
@@ -317,10 +318,10 @@ describe('CircuitBoard', () => {
     })
 
     test('should push to resistor when electron is ready', async() => {
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['rs2']
-      })
+      }))
       const electron = {
         _id: 'e1',
       }
@@ -336,13 +337,14 @@ describe('CircuitBoard', () => {
     })
 
     test('should push to multiple resistor when electron is ready', async() => {
-      circuitBoard.addResistor({
+      circuitBoard.addResistor(new Resistor({
         name: 'rs1',
         next: ['ground']
-      }, {
+      }))
+      circuitBoard.addResistor(new Resistor({
         name: 'rs2',
         next: ['ground']
-      })
+      }))
       const electron = {
         _id: 'e1',
       }
@@ -515,7 +517,8 @@ describe('CircuitBoard', () => {
       const r = {
         name: 'rs1',
         next: ['ground'],
-        pushReply: jest.fn()
+        pushReply: jest.fn(),
+        setParentName: jest.fn()
       }
       const electronId = 'e1'
       const replyId = 'r1'
@@ -531,7 +534,8 @@ describe('CircuitBoard', () => {
       const r = {
         name: 'rs1',
         next: ['ground'],
-        pushReply: jest.fn()
+        pushReply: jest.fn(),
+        setParentName: jest.fn()
       }
       const electronId = 'e1'
       const replyId = 'r1'
@@ -597,6 +601,23 @@ describe('CircuitBoard', () => {
       expect(circuitBoard.stat.init).toHaveBeenCalledWith(d._id, es.length)
       expect(circuitBoard.pushElectron).toHaveBeenCalledWith(es[0], next)
       expect(circuitBoard.pushElectron).toHaveBeenCalledWith(es[1], next)
+    })
+  })
+
+  describe('#setParentName', () => {
+    test('should set parent name and connected status', async () => {
+      const circuitBoard = new CircuitBoard('test')
+      expect(circuitBoard.connected).toBe(false)
+      circuitBoard.setParentName('mb1')
+      expect(circuitBoard.parentName).toBe('mb1')
+      expect(circuitBoard.connected).toBe(true)
+    })
+
+    test('should throw error when board is already connected to some mainboard', async () => {
+      const circuitBoard = new CircuitBoard('test')
+      circuitBoard.connected = true
+      const fn = () => circuitBoard.setParentName('mb1')
+      expect(fn).toThrowError()
     })
   })
 })
