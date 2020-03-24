@@ -219,8 +219,8 @@ class CircuitBoard {
       } else {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
       }
-      debug(`${status} d:${dischargeId}`)
-      await this.DischargeModel.update({ _id: dischargeId }, { status })
+      debug(`update discharge status${status} d:${dischargeId}`, stats)
+      await this.DischargeModel.update({ _id: dischargeId }, { $set: { status, stats } })
       return this.doneQueue.add({ dischargeId })
     }
     return false

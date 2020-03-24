@@ -22,7 +22,8 @@ const dischargeSchema = new mongoose.Schema({
     totalElectrons: { type: Number, default: 0 },
     error: String,
     stack: {}
-  }
+  },
+  stats: mongoose.Schema.Types.Mixed
 }, { timestamps: true })
 
 // dischargeSchema.index()
