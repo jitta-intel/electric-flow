@@ -53,7 +53,7 @@ class RedisStat {
       await this.redisClient.expire(activeKey, this.ttl)
       // For retry case
       await this.redisClient.srem(failedKey, memberId)
-    // For custom stat
+    // For custom stat including reserved status as "skipped"
     } else {
       const customKey = this.getKey(id, status)
       await this.redisClient.sadd(customKey, memberId)

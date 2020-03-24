@@ -32,26 +32,26 @@ const createStockElectricCurrent = async () => {
     exchange: 'BKK',
     symbol: 'HMPRO',
     fail,
-  }, {
-    exchange: 'BKK',
-    symbol: 'HMPRO',
-    fail,
-  }, {
-    exchange: 'BKK',
-    symbol: 'HMPRO',
-    fail,
-  }, {
-    exchange: 'BKK',
-    symbol: 'HMPRO',
-    fail,
-  }, {
-    exchange: 'BKK',
-    symbol: 'HMPRO',
-    fail,
-  }, {
-    exchange: 'BKK',
-    symbol: 'HMPRO',
-    fail,
+  // }, {
+  //   exchange: 'BKK',
+  //   symbol: 'HMPRO',
+  //   fail,
+  // }, {
+  //   exchange: 'BKK',
+  //   symbol: 'HMPRO',
+  //   fail,
+  // }, {
+  //   exchange: 'BKK',
+  //   symbol: 'HMPRO',
+  //   fail,
+  // }, {
+  //   exchange: 'BKK',
+  //   symbol: 'HMPRO',
+  //   fail,
+  // }, {
+  //   exchange: 'BKK',
+  //   symbol: 'HMPRO',
+  //   fail,
   }]
   return new Promise((res, reject) => setTimeout(() => {
     // return reject(new Error('force power source error '))
