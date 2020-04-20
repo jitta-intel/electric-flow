@@ -75,7 +75,7 @@ class CircuitBoard {
       this.queueList.push({
         name: this.getQueueName(resistorName),
         url: redisUrl,
-        hostId: this.name
+        hostId: this.parentName
       })
       debug(`create queue ${this.getQueueName(resistorName)}`)
       return new Queue(`${this.getQueueName(resistorName)}`, redisUrl)

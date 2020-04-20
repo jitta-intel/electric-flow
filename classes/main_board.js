@@ -275,11 +275,11 @@ class MainBoard {
         debug('fetch stats from redis ', discharge._id)
         discharge.stats = await cb.stat.getSummary(discharge._id)
       }
-      discharge.powerSource.queuePath = `/${cb.name}/${cb.name}:power_source`
+      discharge.powerSource.queuePath = `/${this.name}/${cb.powerSource.queue.name}`
       if (resistorStat) {
         discharge.resistorStats = await Promise.map(cb.resistors, async (r) => {
           const stats = await r.stat.getSummary(discharge._id)
-          const queuePath = `/${cb.name}/${r.queue.name}`
+          const queuePath = `/${this.name}/${r.queue.name}`
 
           return {
             name: r.name,
