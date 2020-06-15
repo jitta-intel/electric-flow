@@ -269,7 +269,12 @@ class MainBoard {
   async findSubDischarges(parentId, { resistorStat = false, includeNext = false } = {}) {
     let subDischarges = await this.DischargeModel.find({ parentId }).lean()
     subDischarges = Promise.map(subDischarges, async (discharge) => {
-      const cb = this.getCircuitBoardByName(discharge.boardName)
+      const cb = this.getCircuitBoardByName(discharge.boardName) || {
+        powerSource: {
+          queue: {}
+        },
+        resistors: []
+      }
       // if stats has not embed in discharge
       if (!discharge.stats) {
         debug('fetch stats from redis ', discharge._id)
