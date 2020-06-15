@@ -125,7 +125,7 @@ class Resistor {
   async updateElectron(electronId, { field, value }) {
     const outputKey = `${field}.${this.name}`
     // console.log('updateElectron e:', electronId, 'field', field, 'value', value)
-    return this.ElectronModel.update(
+    return this.ElectronModel.updateOne(
       { _id: electronId },
       {
         $set: {
@@ -223,18 +223,31 @@ class Resistor {
   }
 
   async run(electron) {
+    // save before run handshake job to prevent reply before request handshake process is done
+    if (this.isHandshake()) {
+      await this.updateResistorOutput(electron._id, {
+        value: {
+          status: constants.RESISTOR_OUTPUT_STATUS.WAITING,
+          timestamp: new Date(),
+        }
+      })
+    }
+
     // execute
     const outputData = await this.consume(electron, this.markElectronAsComplete.bind(this)) || {}
     // save output data to electron Collection
     debug(`saving ${JSON.stringify(outputData)} to ${electron._id}`)
 
-    await this.updateResistorOutput(electron._id, {
-      value: {
-        status: this.isHandshake() ? constants.RESISTOR_OUTPUT_STATUS.WAITING : constants.RESISTOR_OUTPUT_STATUS.COMPLETE,
-        timestamp: new Date(),
-        data: { ...outputData }
-      }
-    })
+    // save output for normal resistor
+    if (!this.isHandshake()) {
+      await this.updateResistorOutput(electron._id, {
+        value: {
+          status: constants.RESISTOR_OUTPUT_STATUS.COMPLETE,
+          timestamp: new Date(),
+          data: { ...outputData }
+        }
+      })
+    }
   }
 
   async doneProcess(electron) {

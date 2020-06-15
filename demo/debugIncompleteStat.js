@@ -8,7 +8,7 @@ const client = new Redis('redis://192.168.142.46:6379/3')
 
 const cbName = 'import_stock_xpressfeed'
 const lastResistorName = 'postImportStock'
-const dischargeId = '5ee35916d9a61401695cc9ef'
+const dischargeId = '5ee725e583269b001e1739bc'
 
 
 
