@@ -29,7 +29,7 @@
     "lodash.range": "^3.2.0",
     "mockdate": "^2.0.2",
     "moment": "^2.22.0",
-    "mongoose": "^5.4.19",
+    "mongoose": "^5.9.1",
     "node-schedule-tz": "^1.2.1-4",
     "redlock": "^3.1.2",
     "request-promise": "^4.2.2",

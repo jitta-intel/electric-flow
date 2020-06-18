@@ -110,22 +110,23 @@ class Electrician {
     return this.mongooseConnection.model('Discharge').findOne(_id)
   }
 
-  getArenaUI(basePath) {
+  getArenaUI(basePath, port) {
     let queues = []
     Object.keys(this.mainBoard).forEach((boardName) => {
       queues = [...queues, ...this.mainBoard[boardName].getQueues()]
     })
-    return arena({ queues }, { basePath })
+    return arena({ queues }, { basePath, port })
   }
 
-  applyApiMiddleware({ app, basePath = '' }) {
+  applyApiMiddleware({ app, basePath = '', arenaPort }) {
     this.basePath = basePath
     this.apiPath = `${basePath}/api`
     this.arenaPath = `${basePath}/arena`
+    this.arenaPort = arenaPort
     // parse application/json
     app.use(bodyParser.json())
     app.use(this.apiPath, api(this))
-    app.use(this.getArenaUI(this.arenaPath))
+    app.use(this.getArenaUI(this.arenaPath, this.arenaPort))
   }
 }
 

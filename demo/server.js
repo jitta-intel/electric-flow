@@ -25,7 +25,7 @@ startServer = async () => {
   
   
   // setTimeout(() => {
-  electricFlow.applyApiMiddleware({ app: server, basePath: '' })
+  electricFlow.applyApiMiddleware({ app: server, basePath: '', arenaPort: 4568 })
   ElectricFlowUI.applyMiddleware({ electricFlow, app: server, options: { appName: 'Demo' } })
   server.listen(3000, () => console.log('Example app listening on port 3000!'))
   // }, 3000)

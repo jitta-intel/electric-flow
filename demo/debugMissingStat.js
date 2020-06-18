@@ -4,11 +4,11 @@ const filter = require('lodash.filter')
 const difference = require('lodash.difference')
 const Promise = require('bluebird')
 
-const client = new Redis('redis://10.243.249.103:6379/3')
+const client = new Redis('redis://192.168.142.46:6379/3')
 
 
 const resistor = 'intel'
-const dischargeId = '5b21e13d55f0590047564e9e'
+const dischargeId = '5ee9aa587902d4002d7feae1'
 
 
 
