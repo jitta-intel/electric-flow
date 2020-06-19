@@ -71,7 +71,7 @@ class PowerSource {
   }
 
   async updateActiveDischarge({ _id }) {
-    return this.DischargeModel.update({ _id }, {
+    return this.DischargeModel.updateOne({ _id }, {
       $set: {
         status: 'active',
         powerSource: {
@@ -83,7 +83,7 @@ class PowerSource {
 
   async updateFailedDischarge({ _id }, error = {}) {
     // update discharge status here to reduce 1 query at failedCallback
-    return this.DischargeModel.update({ _id }, {
+    return this.DischargeModel.updateOne({ _id }, {
       $set: {
         status: 'failed',
         powerSource: {
@@ -96,7 +96,7 @@ class PowerSource {
   }
 
   async updateCompleteDischarge({ _id }, totalElectrons) {
-    return this.DischargeModel.update({ _id }, {
+    return this.DischargeModel.updateOne({ _id }, {
       $set: {
         powerSource: {
           status: 'complete',

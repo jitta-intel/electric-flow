@@ -1,7 +1,7 @@
 require('dotenv').config()
 const Electrician = require('../')
 
-console.log(process.env.SLACK_HOOK_URL)
+console.log('slack:', process.env.SLACK_HOOK_URL)
 const electrician = new Electrician({
   mongoUrl: 'mongodb://localhost:27017/electrician',
   redisUrl: 'redis://localhost:6379',

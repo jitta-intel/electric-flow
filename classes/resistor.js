@@ -150,7 +150,7 @@ class Resistor {
     const electronIds = electrons.map(e => e._id)
     debug('update timeout eIds', electronIds)
     const error = new Error(`Handshake reply timeout ${this.timeout} ms`)
-    await this.ElectronModel.update(
+    await this.ElectronModel.updateMany(
       { _id: { $in: electronIds } },
       {
         $set: {
@@ -163,7 +163,7 @@ class Resistor {
         }
       }, { multi: true }
     )
-    return Promise.each(electrons, (electron) => {
+    return Promise.mapSeries(electrons, (electron) => {
       console.error(`Resistor error e[${electron._id}]`, error)
       return this.failedFunc(electron, error)
     })

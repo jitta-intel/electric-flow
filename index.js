@@ -41,7 +41,11 @@ class Electrician {
 
   // init all board connection
   async start() {
-    this.mongooseConnection = mongoose.createConnection(this.mongoUrl)
+    this.mongooseConnection = mongoose.createConnection(this.mongoUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true
+    })
     initModel(this.mongooseConnection)
     const mbs = this.getMainBoards()
     debug('ElectricFlow is running')

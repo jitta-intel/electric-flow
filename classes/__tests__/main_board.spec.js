@@ -62,7 +62,7 @@ describe('MainBoard', () => {
       mb.DischargeModel = {
         find: () => mb.DischargeModel,
         lean: jest.fn(),
-        update: jest.fn()
+        updateOne: jest.fn()
       }
       mb.notifySlack = jest.fn()
     }
@@ -114,7 +114,7 @@ describe('MainBoard', () => {
       mb.DischargeModel = {
         find: () => mb.DischargeModel,
         lean: jest.fn(),
-        update: jest.fn()
+        updateOne: jest.fn()
       }
       mb.retryIfAvailable = jest.fn()
       mb.findDischarges = jest.fn()
@@ -131,7 +131,7 @@ describe('MainBoard', () => {
       const mainDischarge = { _id: 'pid' }
       mb.findDischarges.mockImplementation(() => [mainDischarge])
       await mb.doneDischarge(mainDischarge._id)
-      expect(mb.DischargeModel.update).toHaveBeenCalledWith({ _id: mainDischarge._id }, { status: 'complete' })
+      expect(mb.DischargeModel.updateOne).toHaveBeenCalledWith({ _id: mainDischarge._id }, { status: 'complete' })
       expect(mb.retryIfAvailable).toHaveBeenCalledWith(mainDischarge._id, { type: 'Auto' })
       expect(mb.notifySlack).toHaveBeenCalledWith('done', mainDischarge)
     })
@@ -147,7 +147,7 @@ describe('MainBoard', () => {
       const mainDischarge = { _id: 'pid' }
       mb.findDischarges.mockImplementation(() => [mainDischarge])
       await mb.doneDischarge(mainDischarge._id)
-      expect(mb.DischargeModel.update).toHaveBeenCalledWith({ _id: mainDischarge._id }, { status: 'failed' })
+      expect(mb.DischargeModel.updateOne).toHaveBeenCalledWith({ _id: mainDischarge._id }, { status: 'failed' })
       expect(mb.retryIfAvailable).toHaveBeenCalledWith(mainDischarge._id, { type: 'Auto' })
       expect(mb.notifySlack).toHaveBeenCalledWith('done', mainDischarge)
     })
@@ -369,7 +369,7 @@ describe('MainBoard', () => {
       //     return true
       //   }
       mb.DischargeModel = {
-        update: jest.fn()
+        updateOne: jest.fn()
       }
       mb.findDischarges = jest.fn()
       mb.notifySlack = jest.fn()
@@ -389,7 +389,7 @@ describe('MainBoard', () => {
       }]
       await mb.retry('cb1', dischargeId)
       expect(retryDischargeFn).toHaveBeenCalledWith(dischargeId, { type: 'Manual' })
-      expect(mb.DischargeModel.update).toHaveBeenCalledWith({
+      expect(mb.DischargeModel.updateOne).toHaveBeenCalledWith({
         _id: parentId
       }, {
         status: 'active'

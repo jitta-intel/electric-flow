@@ -6,13 +6,10 @@ const replySchema = new mongoose.Schema({
   resistorName: String,
   payload: {},
 }, {
-  timestamps: true,
-  capped: {
-    size: 40000000000, // 40GB ~ 50000 stocks
-    max: 50000, // 1 day retention = 50,000 docs, 35 GB avg 700K/doc
-    autoIndexId: true
-  }
+  timestamps: true
 })
+
+replySchema.index({ createdAt: -1 }, { expireAfterSeconds: 5 * 24 * 60 * 60 }) 
   
 
 

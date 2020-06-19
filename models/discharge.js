@@ -51,7 +51,7 @@ dischargeSchema.statics.updateRetry = async function updateRetry(discharge, { ty
     no: discharge.retry.length +1,
     type
   }
-  return this.update({ _id: discharge._id }, { $push: { retry } })
+  return this.updateOne({ _id: discharge._id }, { $push: { retry } })
 }
 
 dischargeSchema.statics.findSubDischargeIds = async function findSubDischargeIds(dischargeId) {

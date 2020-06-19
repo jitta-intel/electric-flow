@@ -85,7 +85,7 @@ class CircuitBoard {
   }
 
   async cleanQueue(queueRetention) {
-    return Promise.each(this.resistors, async (rs) => {
+    return Promise.mapSeries(this.resistors, async (rs) => {
       return rs.cleanQueue(queueRetention)
     })
   }
@@ -220,7 +220,7 @@ class CircuitBoard {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
       }
       debug(`update discharge status${status} d:${dischargeId}`, stats)
-      await this.DischargeModel.update({ _id: dischargeId }, { $set: { status, stats } })
+      await this.DischargeModel.updateOne({ _id: dischargeId }, { $set: { status, stats } })
       return this.doneQueue.add({ dischargeId })
     }
     return false
@@ -333,9 +333,9 @@ class CircuitBoard {
 
     let electronIds = await this.stat.getMember(dischargeId, 'failed')
     electronIds = electronIds.map(eId => mongoose.Types.ObjectId(eId))
-    await this.ElectronModel.update({ _id: { $in: electronIds } }, { $unset: { retry: '' } }, { multi: true })
+    await this.ElectronModel.updateMany({ _id: { $in: electronIds } }, { $unset: { retry: '' } }, { multi: true })
     const electrons = await this.ElectronModel.find({ _id: { $in: electronIds } }).lean()
-    await Promise.each(electrons, async (electron) => {
+    await Promise.mapSeries(electrons, async (electron) => {
       await this.stat.removeMember(dischargeId, 'failed', electron._id)
       return this.pushElectron(electron, next)
     })

@@ -448,7 +448,7 @@ describe('CircuitBoard', () => {
         }
       }
       cb.DischargeModel = DischargeModel
-      cb.DischargeModel.update = jest.fn()
+      cb.DischargeModel.updateOne = jest.fn()
     }
     const mockStat = (cb) => {
       cb.stat = {
@@ -483,11 +483,11 @@ describe('CircuitBoard', () => {
       })
       mockDischargeModel(circuitBoard)
       mockStat(circuitBoard)
-      circuitBoard.stat.getSummary = jest.fn(() => (stats))
+      circuitBoard.stat.getSummary = jest.fn(async () => (stats))
       circuitBoard.doneQueue = doneQueue
 
       const result = await circuitBoard.checkDischargeIsDone(mockDischargeId)
-      expect(circuitBoard.DischargeModel.update).toHaveBeenCalledWith({ _id: mockDischargeId }, { status: 'complete' })
+      expect(circuitBoard.DischargeModel.updateOne).toHaveBeenCalledWith({ _id: mockDischargeId }, { $set: { status: 'complete', stats } })
       expect(doneQueue.add).toHaveBeenCalledWith({ dischargeId: mockDischargeId })
     })
 
@@ -506,7 +506,7 @@ describe('CircuitBoard', () => {
       circuitBoard.doneQueue = doneQueue
 
       const result = await circuitBoard.checkDischargeIsDone(mockDischargeId)
-      expect(circuitBoard.DischargeModel.update).toHaveBeenCalledWith({ _id: mockDischargeId }, { status: 'failed' })
+      expect(circuitBoard.DischargeModel.updateOne).toHaveBeenCalledWith({ _id: mockDischargeId }, { $set: { status: 'failed', stats } })
       expect(doneQueue.add).toHaveBeenCalledWith({ dischargeId: mockDischargeId })
     })
   })

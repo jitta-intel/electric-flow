@@ -103,7 +103,7 @@ class MainBoard {
   }
 
   async abortDischarge(parentId) {
-    await this.DischargeModel.update({ _id: parentId }, { status: 'aborted' })
+    await this.DischargeModel.updateOne({ _id: parentId }, { status: 'aborted' })
     const mainDischarge = await this.DischargeModel.findOne({ _id: parentId })
     await this.notifySlack('abort', mainDischarge)
     // get active discharge
@@ -127,7 +127,7 @@ class MainBoard {
       status = 'failed'
     }
     debug(`Finish [status:${status}] main d:${parentId} `)
-    await this.DischargeModel.update({ _id: parentId }, { status })
+    await this.DischargeModel.updateOne({ _id: parentId }, { status })
     const mainDischarges = await this.findDischarges({ _id: parentId })
     await this.notifySlack('done', mainDischarges[0])
     return this.retryIfAvailable(parentId, { type: 'Auto' })
@@ -325,7 +325,7 @@ class MainBoard {
     const board = this.getCircuitBoardByName(circuitBoardName)
     if (board) {
       const dischargeObj = await board.retryDischarge(dischargeId, { type })
-      await this.DischargeModel.update({ _id: dischargeObj.parentId }, { status: 'active' })
+      await this.DischargeModel.updateOne({ _id: dischargeObj.parentId }, { status: 'active' })
       const mainDischarges = await this.findDischarges({ _id: dischargeObj.parentId })
       await this.notifySlack('retry', mainDischarges[0])
       return dischargeObj

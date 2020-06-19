@@ -1,0 +1,8 @@
+Integration test scenario
+
+
+normal workflow
+last job failed must trigger complete
+last job timeout must trigger complete
+
+

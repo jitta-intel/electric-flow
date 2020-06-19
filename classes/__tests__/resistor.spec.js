@@ -313,7 +313,7 @@ describe('Resistor', () => {
       rs.queryElectronData = jest.fn(() => testElectron)
       rs.retryIfAvailable = jest.fn()
       rs.ElectronModel = {
-        update: jest.fn((() => rs.ElectronModel)),
+        updateOne: jest.fn((() => rs.ElectronModel)),
         exec: jest.fn()
       }
       rs.stat = {
