@@ -21,13 +21,15 @@ class Resistor {
     retryLimit,
     retryDelay,
     timeout,
-    startDelay
+    startDelay,
+    queueOptions
   } = {}) {
     this.name = name
     this.parentName = null
     this.consume = consume
     this.connected = false
     this.type = type
+    this.queueOptions = queueOptions
     this.timeout = timeout || constants.RESISTOR_DEFAULT_TIMEOUT
     this.dependencies = dependencies || null
     if (this.dependencies && !Array.isArray(this.dependencies)) {
@@ -85,7 +87,7 @@ class Resistor {
   }
 
   setupQueue({ createQueue, redlock }) {
-    this.queue = createQueue(`resistor:${this.name}`)
+    this.queue = createQueue(`resistor:${this.name}`, this.queueOptions)
     this.queue.on('cleaned', (job, type) => {
       debugQ(`Cleaned ${this.name}Q %s %s jobs`, job.length, type)
     })

@@ -15,6 +15,15 @@ importStockBoard.usePowerSource(new PowerSource({
 importStockBoard.addResistor(new Resistor({
   name: 'getFinancial',
   consume: importStockConsumer.updateFinancial,
+  queueOptions: {
+    settings: {
+      // Max time for processing job
+      lockDuration: 5 * 60 * 1000, // 6 min
+      lockRenewTime: 0.45 * 60 * 1000, // 45 s
+      stalledInterval: 3 * 60 * 1000, // 3 min,
+      maxStalledCount: 2
+    }
+  },
   next: 'getInterday'
 }))
 
