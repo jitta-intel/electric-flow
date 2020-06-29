@@ -40,7 +40,7 @@ describe('Resistor', () => {
       const expectedQueue = { q: 1, on: jest.fn() }
       const createQueue = jest.fn(() => (expectedQueue))
       rs.setupQueue({ createQueue })
-      expect(createQueue).toHaveBeenCalledWith(`resistor:rs1`)
+      expect(createQueue).toHaveBeenCalledWith(`resistor:rs1`, undefined)
       expect(rs.queue).toEqual(expectedQueue)
     })
     test('should create ReplyQueue if handshake', () => {
@@ -52,9 +52,9 @@ describe('Resistor', () => {
       const expectedQueue = { q: 1, on: jest.fn() }
       const createQueue = jest.fn(() => (expectedQueue))
       rs.setupQueue({ createQueue })
-      expect(createQueue).toHaveBeenCalledWith(`resistor:rs1`)
+      expect(createQueue.mock.calls[0]).toEqual([`resistor:rs1`, undefined])
       expect(rs.queue).toEqual(expectedQueue)
-      expect(createQueue).toHaveBeenCalledWith(`resistor:rs1:reply`)
+      expect(createQueue.mock.calls[1]).toEqual([`resistor:rs1:reply`])
       expect(rs.queue).toEqual(expectedQueue)
     })
   })

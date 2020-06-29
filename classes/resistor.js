@@ -217,11 +217,12 @@ class Resistor {
 
   async markElectronAsComplete(electron) {
     await this.stat.update(electron.dischargeId, electron._id, 'markedAsComplete')
-    return this.ElectronModel
-    .update(
+    await this.ElectronModel
+    .updateOne(
       { _id: electron._id },
       { markedAsComplete: true }
     ).exec()
+    return true
   }
 
   async run(electron) {
@@ -236,7 +237,7 @@ class Resistor {
     }
 
     // execute
-    const outputData = await this.consume(electron, this.markElectronAsComplete.bind(this)) || {}
+    const outputData = await this.consume(electron, this.markElectronAsComplete.bind(this, electron)) || {}
     // save output data to electron Collection
     debug(`saving ${JSON.stringify(outputData)} to ${electron._id}`)
 
@@ -341,7 +342,7 @@ class Resistor {
 
   async runReplyHandler(electron, replyData) {
     debug(`runReplyhandler ${electron._id} isReplyHandler exists ${!!this.replyHandler}`)
-    const outputData = await this.replyHandler(electron, replyData, this.markElectronAsComplete.bind(this)) || {}
+    const outputData = await this.replyHandler(electron, replyData, this.markElectronAsComplete.bind(this, electron)) || {}
     // save output data to electron Collection
     debug(`saving ${JSON.stringify(outputData)} to ${electron._id}`)
     return this.updateResistorOutput(electron._id, {
