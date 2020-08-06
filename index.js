@@ -50,7 +50,7 @@ class Electrician {
     const mbs = this.getMainBoards()
     debug('ElectricFlow is running')
     return Promise.each(mbs, (mb) => {
-      this.mainBoard[mb.name].start({
+      return this.mainBoard[mb.name].start({
         mongooseConnection: this.mongooseConnection,
         redisUrl: this.redisUrl,
         statsRedisUrl: this.statsRedisUrl,

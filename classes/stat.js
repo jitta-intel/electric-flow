@@ -104,6 +104,7 @@ class RedisStat {
       await Promise.each(this.customStatuses, async (customStatus) => {
         const customKey = this.getKey(id, customStatus)
         summary[customStatus] =  Number(await this.redisClient.scard(customKey))
+        return false
       })
     }
     return summary
