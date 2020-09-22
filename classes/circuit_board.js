@@ -102,9 +102,9 @@ class CircuitBoard {
         if (dischargeObj.status === 'aborted') {
           return true
         }
-        this.initAndPushElectrons(discharge, electrons, next)
+        return this.initAndPushElectrons(discharge, electrons, next)
       },
-      (discharge, error) => {
+      async (discharge, error) => {
         // Do something to reset this process
         debug(`circuitBoard listen error: ${error.stack}`)
         return this.doneQueue.add({ dischargeId: discharge._id })
@@ -247,13 +247,14 @@ class CircuitBoard {
     return isReady
   }
 
-  handshake(electronId, resistorName, replyId) {
+  async handshake(electronId, resistorName, replyId) {
     const r = this.getResistorByName(resistorName)
     if (!r) {
       throw new Error(`resistor ${resistorName} is not found`)
     }
-    r.pushReply({ electronId, replyId })
+    await r.pushReply({ electronId, replyId })
     debug(`add e:${electronId}:reply to r:${resistorName} rep:${replyId}`)
+    return true
   }
 
   async pushElectron(electron, resistorName) {
@@ -262,11 +263,12 @@ class CircuitBoard {
       throw new Error(`resistor ${resistorName} is not found`)
     }
     debug(`get resistor ${r.name}`)
-    r.stat.update(electron.dischargeId, electron._id, 'pushed')
+    await r.stat.update(electron.dischargeId, electron._id, 'pushed')
     // remove output for performance
     delete electron.resistorOutput
-    r.push(electron)
+    await r.push(electron)
     debug(`add e:${electron._id} to r:${resistorName}`)
+    return true
   }
 
   // check dependency before charge electron to resistor
@@ -279,12 +281,16 @@ class CircuitBoard {
       await this.updateSkipStat(electron, nexts)
       return this.ground(electron)
     }
-    nexts.forEach(async (resistorName) => {
+    await Promise.mapSeries(nexts, async (resistorName) => {
       if (resistorName === 'ground') return this.ground(electron)
 
       const ready = this.isElectronReadyToPush(electron, resistorName)
-      if (ready) this.pushElectron(electron, resistorName)
+      if (ready) {
+        await this.pushElectron(electron, resistorName)
+      }
+      return true
     })
+    return true
   }
 
   async updateSkipStat(electron, nexts) {
@@ -307,8 +313,7 @@ class CircuitBoard {
     })
     await dischargeObj.save()
     debug(`'${this.name}' discharge d:${dischargeObj._id}`, payload)
-    // TODO: push to powerSource queue
-    this.powerSource.push(dischargeObj)
+    await this.powerSource.push(dischargeObj)
     return dischargeObj
   }
 
@@ -327,7 +332,7 @@ class CircuitBoard {
     await this.DischargeModel.updateRetry(dischargeObj, { type })
     // check if powersource failed retry power source
     if (dischargeObj.powerSource.status === 'failed') {
-      this.powerSource.push(dischargeObj)
+      await this.powerSource.push(dischargeObj)
       return dischargeObj
     }
 
@@ -345,11 +350,12 @@ class CircuitBoard {
 
   async initAndPushElectrons(discharge, electrons, next) {
     await this.stat.init(discharge._id, electrons.length)
-    this.resistors.forEach(resistor => resistor.stat.init(discharge._id, electrons.length))
+    await Promise.mapSeries(this.resistors, async (resistor) => resistor.stat.init(discharge._id, electrons.length))
     debug(`starting pushing ${electrons.length} electrons`)
-    electrons.forEach((electron) => {
-      this.pushElectron(electron, next)
+    await Promise.mapSeries(electrons, async (electron) => {
+      return this.pushElectron(electron, next)
     })
+    return true
   }
 }
 

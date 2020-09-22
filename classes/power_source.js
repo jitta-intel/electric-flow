@@ -49,9 +49,9 @@ class PowerSource {
     this.queue = createQueue(`power_source`)
   }
 
-  push(discharge) {
+  async push(discharge) {
     debug('push discharge', discharge)
-    this.queue.add(discharge)
+    return this.queue.add(discharge)
   }
 
   listen(nextFunc, failedFunc) {
