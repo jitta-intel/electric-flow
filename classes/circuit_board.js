@@ -225,7 +225,7 @@ class CircuitBoard {
           }).lean()
 
           this.fallbackCompleteThreshold(electrons)
-				}
+        }
       }
       debug(`update discharge status${status} d:${dischargeId}`, stats)
       await this.DischargeModel.updateOne({ _id: dischargeId }, { $set: { status, stats } })
