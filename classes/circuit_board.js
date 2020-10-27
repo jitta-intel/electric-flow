@@ -218,13 +218,13 @@ class CircuitBoard {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
 
         if (this.fallbackCompleteThreshold) {
-					let electronIds = await this.stat.getMember(dischargeId, 'failed')
+          let electronIds = await this.stat.getMember(dischargeId, 'failed')
 
-					const electrons = await this.ElectronModel.find({
-						_id: { $in: electronIds },
-					}).lean()
+          const electrons = await this.ElectronModel.find({
+            _id: { $in: electronIds },
+          }).lean()
 
-					this.fallbackCompleteThreshold(electrons)
+          this.fallbackCompleteThreshold(electrons)
 				}
       }
       debug(`update discharge status${status} d:${dischargeId}`, stats)
