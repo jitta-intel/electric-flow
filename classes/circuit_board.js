@@ -19,8 +19,7 @@ class CircuitBoard {
     this.redlock = null
     this.connected = false
     this.resistors = []
-    this.queues = {}
-    this.queueList = []
+    this.queues = []
     this.completeThreshold = completeThreshold || DEFAULT_COMPLETE_THRESHOLD
   }
 
@@ -72,13 +71,11 @@ class CircuitBoard {
 
   setQueue({ redisUrl }) {
     const createQueue = (resistorName, options = {}) => {
-      this.queueList.push({
-        name: this.getQueueName(resistorName),
-        url: redisUrl,
-        hostId: this.parentName
-      })
       debug(`create queue ${this.getQueueName(resistorName)}`, options)
-      return new Queue(`${this.getQueueName(resistorName)}`, redisUrl, options)
+      const queue = new Queue(`${this.getQueueName(resistorName)}`, redisUrl, options)
+      // save queue created for bull-board UI
+      this.queues.push(queue)
+      return queue
     }
     this.powerSource.setupQueue({ createQueue })
     this.resistors.forEach(resistor => resistor.setupQueue({ createQueue, redlock: this.redlock }))

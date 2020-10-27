@@ -18,7 +18,7 @@ class MainBoard {
   getQueues() {
     let queues = []
     this.circuitBoards.forEach((board) => {
-      queues = [...queues, ...board.queueList]
+      queues = [...queues, ...board.queues]
     })
     return queues
   }
