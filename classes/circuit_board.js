@@ -13,7 +13,7 @@ const PowerSource = require('./power_source')
 const DEFAULT_COMPLETE_THRESHOLD = 0.9
 
 class CircuitBoard {
-  constructor({ name, completeThreshold, fallbackCompleteThreshold } = {}) {
+  constructor({ name, completeThreshold, fallbackCompleteThreshold, completeCallback } = {}) {
     this.name = name
     this.powerSource = null
     this.redlock = null
@@ -22,6 +22,7 @@ class CircuitBoard {
     this.queues = []
     this.completeThreshold = completeThreshold || DEFAULT_COMPLETE_THRESHOLD
     this.fallbackCompleteThreshold = fallbackCompleteThreshold || null
+    this.completeCallback = completeCallback || null
   }
 
   setParentName(parentName) {
@@ -213,7 +214,16 @@ class CircuitBoard {
       let status
       if (stats.completeRatio >= this.completeThreshold) {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.COMPLETE
-      // if complete ratio below threshold => failed
+        // if complete ratio below threshold => failed
+        if (this.completeCallback) {
+          let electronIds = await this.stat.getMember(dischargeId, 'complete')
+          electronIds = electronIds.map((eId) => mongoose.Types.ObjectId(eId))
+          const electrons = await this.ElectronModel.find({
+            _id: { $in: electronIds }
+          }).lean()
+
+          this.completeCallback(electrons)
+        }
       } else {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
 
