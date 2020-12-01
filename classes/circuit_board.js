@@ -13,7 +13,7 @@ const PowerSource = require('./power_source')
 const DEFAULT_COMPLETE_THRESHOLD = 0.9
 
 class CircuitBoard {
-  constructor({ name, completeThreshold, fallbackCompleteThreshold, completeCallback } = {}) {
+  constructor({ name, completeThreshold, failCallback, completeCallback } = {}) {
     this.name = name
     this.powerSource = null
     this.redlock = null
@@ -21,7 +21,7 @@ class CircuitBoard {
     this.resistors = []
     this.queues = []
     this.completeThreshold = completeThreshold || DEFAULT_COMPLETE_THRESHOLD
-    this.fallbackCompleteThreshold = fallbackCompleteThreshold || null
+    this.failCallback = failCallback || null
     this.completeCallback = completeCallback || null
   }
 
@@ -227,14 +227,14 @@ class CircuitBoard {
       } else {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
 
-        if (this.fallbackCompleteThreshold) {
+        if (this.failCallback) {
           let electronIds = await this.stat.getMember(dischargeId, 'failed')
 
           const electrons = await this.ElectronModel.find({
             _id: { $in: electronIds },
           }).lean()
 
-          this.fallbackCompleteThreshold(electrons)
+          this.failCallback(electrons)
         }
       }
       debug(`update discharge status${status} d:${dischargeId}`, stats)

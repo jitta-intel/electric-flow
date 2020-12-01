@@ -522,7 +522,7 @@ describe('CircuitBoard', () => {
       expect(doneQueue.add).toHaveBeenCalledWith({ dischargeId: mockDischargeId })
     })
 
-    test('should update failed status and run fallbackCompleteThreshold when completeRatio is less than threshold', async () => {
+    test('should update failed status and run failCallback when completeRatio is less than threshold', async () => {
       const stats = {
         isAllDone: true,
         completeRatio: 0.6
@@ -530,7 +530,7 @@ describe('CircuitBoard', () => {
       const circuitBoard = new CircuitBoard({
         name: 'test',
         completeThreshold: 0.8,
-        fallbackCompleteThreshold: mockFallbackThreshold
+        failCallback: mockFallbackThreshold
       })
       mockDischargeModel(circuitBoard)
       mockStat(circuitBoard)
@@ -542,10 +542,10 @@ describe('CircuitBoard', () => {
 
       const result = await circuitBoard.checkDischargeIsDone(mockDischargeId)
       expect(circuitBoard.stat.getMember).toHaveBeenCalled()
-      expect(circuitBoard.fallbackCompleteThreshold).toHaveBeenCalled()
+      expect(circuitBoard.failCallback).toHaveBeenCalled()
     })
 
-    test('should update failed status and not run fallbackCompleteThreshold when completeRatio is less than threshold', async () => {
+    test('should update failed status and not run failCallback when completeRatio is less than threshold', async () => {
       const stats = {
         isAllDone: true,
         completeRatio: 0.6
