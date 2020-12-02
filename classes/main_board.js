@@ -18,7 +18,7 @@ class MainBoard {
   getQueues() {
     let queues = []
     this.circuitBoards.forEach((board) => {
-      queues = [...queues, ...board.queueList]
+      queues = [...queues, ...board.queues]
     })
     return queues
   }
@@ -112,7 +112,7 @@ class MainBoard {
       // abort activeDischarge and all electron
       const circuitBoard = this.getCircuitBoardByName(activeDischarge.boardName)
       await circuitBoard.abort(activeDischarge._id)
-      console.log(` abord cb:${circuitBoard} with id ${activeDischarge._id} `)
+      // console.log(` abort cb:${circuitBoard} with id ${activeDischarge._id} `)
     }
     return mainDischarge
   }
@@ -213,7 +213,7 @@ class MainBoard {
     const mainDischarge = await this.DischargeModel.findOne({ _id: mainDischargeId })
     const completeDependencies = await this.DischargeModel.findCompleteChildren(mainDischarge._id)
     let discharged = false
-    await Promise.each(this.circuitBoards, async (board) => {
+    await Promise.mapSeries(this.circuitBoards, async (board) => {
       // skip if board has complete
       if (completeDependencies.includes(board.name)) return false
       // if board met all dependencies

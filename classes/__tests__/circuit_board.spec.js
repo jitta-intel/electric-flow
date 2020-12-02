@@ -452,9 +452,21 @@ describe('CircuitBoard', () => {
     }
     const mockStat = (cb) => {
       cb.stat = {
-        getSummary: jest.fn()
+        getSummary: jest.fn(),
+        getMember: jest.fn()
       }
     }
+
+    const mockElectron = (cb, electron) => {
+      cb.ElectronModel = {
+        find: () => cb.ElectronModel,
+        lean: async () => {
+          if (electron) return Object.assign({}, electron)
+          return null
+        }
+      }
+    }
+    const mockFallbackThreshold = jest.fn()
     afterEach(() => {
       doneQueue.add.mockClear()
     })
@@ -509,10 +521,54 @@ describe('CircuitBoard', () => {
       expect(circuitBoard.DischargeModel.updateOne).toHaveBeenCalledWith({ _id: mockDischargeId }, { $set: { status: 'failed', stats } })
       expect(doneQueue.add).toHaveBeenCalledWith({ dischargeId: mockDischargeId })
     })
+
+    test('should update failed status and run failCallback when completeRatio is less than threshold', async () => {
+      const stats = {
+        isAllDone: true,
+        completeRatio: 0.6
+      }
+      const circuitBoard = new CircuitBoard({
+        name: 'test',
+        completeThreshold: 0.8,
+        failCallback: mockFallbackThreshold
+      })
+      mockDischargeModel(circuitBoard)
+      mockStat(circuitBoard)
+      mockElectron(circuitBoard,{
+        _id: 'e1'
+      })
+      circuitBoard.stat.getSummary = jest.fn(() => (stats))
+      circuitBoard.doneQueue = doneQueue
+
+      const result = await circuitBoard.checkDischargeIsDone(mockDischargeId)
+      expect(circuitBoard.stat.getMember).toHaveBeenCalled()
+      expect(circuitBoard.failCallback).toHaveBeenCalled()
+    })
+
+    test('should update failed status and not run failCallback when completeRatio is less than threshold', async () => {
+      const stats = {
+        isAllDone: true,
+        completeRatio: 0.6
+      }
+      const circuitBoard = new CircuitBoard({
+        name: 'test',
+        completeThreshold: 0.8,
+      })
+      mockDischargeModel(circuitBoard)
+      mockStat(circuitBoard)
+      mockElectron(circuitBoard,{
+        _id: 'e1'
+      })
+      circuitBoard.stat.getSummary = jest.fn(() => (stats))
+      circuitBoard.doneQueue = doneQueue
+
+      const result = await circuitBoard.checkDischargeIsDone(mockDischargeId)
+      expect(circuitBoard.stat.getMember).not.toHaveBeenCalled()
+    })
   })
 
   describe('#handshake', () => {
-    test('should throw when resistor is not found', () => {
+    test('should throw when resistor is not found', async () => {
       const circuitBoard = new CircuitBoard('test')
       const r = {
         name: 'rs1',
@@ -523,13 +579,13 @@ describe('CircuitBoard', () => {
       const electronId = 'e1'
       const replyId = 'r1'
       circuitBoard.addResistor(r)
-      const fn = () => {
-        circuitBoard.handshake(electronId, 'rs0', replyId)
+      const fn = async () => {
+        return circuitBoard.handshake(electronId, 'rs0', replyId)
       }
-      expect(fn).toThrow(/not found/)
+      await expect(fn()).rejects.toEqual(new Error('resistor rs0 is not found'))
     })
 
-    test('should push reply to resistor', () => {
+    test('should push reply to resistor', async () => {
       const circuitBoard = new CircuitBoard('test')
       const r = {
         name: 'rs1',
@@ -540,7 +596,7 @@ describe('CircuitBoard', () => {
       const electronId = 'e1'
       const replyId = 'r1'
       circuitBoard.addResistor(r)
-      circuitBoard.handshake(electronId, r.name, replyId)
+      await circuitBoard.handshake(electronId, r.name, replyId)
       expect(r.pushReply).toHaveBeenCalledWith({ electronId, replyId })
     })
   })

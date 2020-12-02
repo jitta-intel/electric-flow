@@ -99,13 +99,13 @@ describe('Resistor', () => {
         update: jest.fn()
       }
     }
-    test('should update electron', () => {
+    test('should update electron', async () => {
       const electron = { _id: 'e1' }
       const r = new Resistor({
         name: 'rs1'
       })
       mockUpdate(r)
-      r.updateRetry(electron)
+      await r.updateRetry(electron)
       expect(r.ElectronModel.update).toHaveBeenCalledWith(
         { _id: electron._id }, {
         $inc: {
@@ -460,18 +460,18 @@ describe('Resistor', () => {
 
 
   describe('#pushReply', () => {
-    test('should throw if call with normal resistor', () => {
+    test('should throw if call with normal resistor', async () => {
       const rs = new Resistor({
         name: 'rs1',
         replyHandler: jest.fn(() => (output))
       })
-      const fn = () => {
-        rs.pushReply({})
+      const fn = async () => {
+        return rs.pushReply({})
       }
-      expect(fn).toThrow('pushReply must use with handshake type')
+      await expect(fn()).rejects.toEqual(new Error('pushReply must use with handshake type'))
     })
 
-    test('should add data to replyQueue', () => {
+    test('should add data to replyQueue', async () => {
       const rs = new Resistor({
         name: 'rs1',
         type: 'handshake',
@@ -482,7 +482,7 @@ describe('Resistor', () => {
       }
       const electronId = 'e1'
       const replyId = 'rId'
-      rs.pushReply({ electronId, replyId })
+      await rs.pushReply({ electronId, replyId })
       expect(rs.replyQueue.add).toHaveBeenCalledWith({ electronId, replyId })
     })
   })

@@ -113,7 +113,7 @@ class Resistor {
     return this.type === constants.RESISTOR_TYPES.HANDSHAKE
   }
 
-  push(electron) {
+  async push(electron) {
     debug('push electron', electron)
     const opts = {
       // NOTE: backoff only works when auto retry is made by bull itself
@@ -121,7 +121,7 @@ class Resistor {
     }
     if (this.startDelay) opts.delay = this.startDelay
     if (electron.priority) opts.priority = electron.priority
-    this.queue.add(electron, opts) //, { timeout: this.timeout })
+    return this.queue.add(electron, opts) //, { timeout: this.timeout })
   }
 
   async updateElectron(electronId, { field, value }) {
@@ -175,7 +175,7 @@ class Resistor {
     return this.updateElectron(electronId, { field: 'resistorOutput', value })
   }
 
-  updateRetry(electron) {
+  async updateRetry(electron) {
     const outputKey = `retry.${this.name}`
     return this.ElectronModel
       .update(
@@ -276,7 +276,7 @@ class Resistor {
     debug( this.name, ' is listening.',)
     this.queue.process(async (job) => {
       const { _id: electronId, dischargeId } = job.data
-      this.stat.update(dischargeId, electronId, 'consumed')
+      await this.stat.update(dischargeId, electronId, 'consumed')
       // query electron data
       const electron = await this.queryElectronData(electronId)
       if (!electron) throw new Error(`Electron:${electronId} is missing.`)
@@ -355,12 +355,12 @@ class Resistor {
   }
 
 
-  pushReply({ electronId, replyId }) {
+  async pushReply({ electronId, replyId }) {
     if (this.isHandshake()) {
       debug('push to replyQueue', electronId, replyId)
       return this.replyQueue.add({ electronId, replyId })
     }
-    throw new Error('pushReply must use with handshake type ')
+    throw new Error('pushReply must use with handshake type')
   }
 
   isReplyAlreadyProcess(electron) {

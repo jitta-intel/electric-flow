@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const arena = require('bull-arena')
 const Promise = require('bluebird')
 const bodyParser = require('body-parser')
 const debug = require('debug')('electric-flow')
@@ -114,23 +113,31 @@ class Electrician {
     return this.mongooseConnection.model('Discharge').findOne(_id)
   }
 
-  getArenaUI(basePath, port) {
+  // getArenaUI(basePath, port) {
+  //   let queues = []
+  //   Object.keys(this.mainBoard).forEach((boardName) => {
+  //     queues = [...queues, ...this.mainBoard[boardName].getQueues()]
+  //   })
+  //   return arena({ queues }, { basePath, port })
+  // }
+
+  getQueues() {
     let queues = []
     Object.keys(this.mainBoard).forEach((boardName) => {
       queues = [...queues, ...this.mainBoard[boardName].getQueues()]
     })
-    return arena({ queues }, { basePath, port })
+    return queues
   }
 
-  applyApiMiddleware({ app, basePath = '', arenaPort }) {
+  applyApiMiddleware({ app, basePath = '' }) {
     this.basePath = basePath
     this.apiPath = `${basePath}/api`
-    this.arenaPath = `${basePath}/arena`
-    this.arenaPort = arenaPort
+    // this.arenaPath = `${basePath}/arena`
+    // this.arenaPort = arenaPort
     // parse application/json
     app.use(bodyParser.json())
     app.use(this.apiPath, api(this))
-    app.use(this.getArenaUI(this.arenaPath, this.arenaPort))
+    // app.use(this.getArenaUI(this.arenaPath, this.arenaPort))
   }
 }
 

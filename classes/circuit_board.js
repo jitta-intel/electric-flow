@@ -13,15 +13,16 @@ const PowerSource = require('./power_source')
 const DEFAULT_COMPLETE_THRESHOLD = 0.9
 
 class CircuitBoard {
-  constructor({ name, completeThreshold } = {}) {
+  constructor({ name, completeThreshold, failCallback, completeCallback } = {}) {
     this.name = name
     this.powerSource = null
     this.redlock = null
     this.connected = false
     this.resistors = []
-    this.queues = {}
-    this.queueList = []
+    this.queues = []
     this.completeThreshold = completeThreshold || DEFAULT_COMPLETE_THRESHOLD
+    this.failCallback = failCallback || null
+    this.completeCallback = completeCallback || null
   }
 
   setParentName(parentName) {
@@ -72,13 +73,11 @@ class CircuitBoard {
 
   setQueue({ redisUrl }) {
     const createQueue = (resistorName, options = {}) => {
-      this.queueList.push({
-        name: this.getQueueName(resistorName),
-        url: redisUrl,
-        hostId: this.parentName
-      })
       debug(`create queue ${this.getQueueName(resistorName)}`, options)
-      return new Queue(`${this.getQueueName(resistorName)}`, redisUrl, options)
+      const queue = new Queue(`${this.getQueueName(resistorName)}`, redisUrl, options)
+      // save queue created for bull-board UI
+      this.queues.push(queue)
+      return queue
     }
     this.powerSource.setupQueue({ createQueue })
     this.resistors.forEach(resistor => resistor.setupQueue({ createQueue, redlock: this.redlock }))
@@ -102,9 +101,9 @@ class CircuitBoard {
         if (dischargeObj.status === 'aborted') {
           return true
         }
-        this.initAndPushElectrons(discharge, electrons, next)
+        return this.initAndPushElectrons(discharge, electrons, next)
       },
-      (discharge, error) => {
+      async (discharge, error) => {
         // Do something to reset this process
         debug(`circuitBoard listen error: ${error.stack}`)
         return this.doneQueue.add({ dischargeId: discharge._id })
@@ -215,9 +214,28 @@ class CircuitBoard {
       let status
       if (stats.completeRatio >= this.completeThreshold) {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.COMPLETE
-      // if complete ratio below threshold => failed
+        // if complete ratio below threshold => failed
+        if (this.completeCallback) {
+          let electronIds = await this.stat.getMember(dischargeId, 'complete')
+          electronIds = electronIds.map((eId) => mongoose.Types.ObjectId(eId))
+          const electrons = await this.ElectronModel.find({
+            _id: { $in: electronIds }
+          }).lean()
+
+          this.completeCallback(electrons)
+        }
       } else {
         status = resistorConstants.RESISTOR_OUTPUT_STATUS.FAILED
+
+        if (this.failCallback) {
+          let electronIds = await this.stat.getMember(dischargeId, 'failed')
+
+          const electrons = await this.ElectronModel.find({
+            _id: { $in: electronIds },
+          }).lean()
+
+          this.failCallback(electrons)
+        }
       }
       debug(`update discharge status${status} d:${dischargeId}`, stats)
       await this.DischargeModel.updateOne({ _id: dischargeId }, { $set: { status, stats } })
@@ -247,13 +265,14 @@ class CircuitBoard {
     return isReady
   }
 
-  handshake(electronId, resistorName, replyId) {
+  async handshake(electronId, resistorName, replyId) {
     const r = this.getResistorByName(resistorName)
     if (!r) {
       throw new Error(`resistor ${resistorName} is not found`)
     }
-    r.pushReply({ electronId, replyId })
+    await r.pushReply({ electronId, replyId })
     debug(`add e:${electronId}:reply to r:${resistorName} rep:${replyId}`)
+    return true
   }
 
   async pushElectron(electron, resistorName) {
@@ -262,11 +281,12 @@ class CircuitBoard {
       throw new Error(`resistor ${resistorName} is not found`)
     }
     debug(`get resistor ${r.name}`)
-    r.stat.update(electron.dischargeId, electron._id, 'pushed')
+    await r.stat.update(electron.dischargeId, electron._id, 'pushed')
     // remove output for performance
     delete electron.resistorOutput
-    r.push(electron)
+    await r.push(electron)
     debug(`add e:${electron._id} to r:${resistorName}`)
+    return true
   }
 
   // check dependency before charge electron to resistor
@@ -279,12 +299,16 @@ class CircuitBoard {
       await this.updateSkipStat(electron, nexts)
       return this.ground(electron)
     }
-    nexts.forEach(async (resistorName) => {
+    await Promise.mapSeries(nexts, async (resistorName) => {
       if (resistorName === 'ground') return this.ground(electron)
 
       const ready = this.isElectronReadyToPush(electron, resistorName)
-      if (ready) this.pushElectron(electron, resistorName)
+      if (ready) {
+        await this.pushElectron(electron, resistorName)
+      }
+      return true
     })
+    return true
   }
 
   async updateSkipStat(electron, nexts) {
@@ -307,8 +331,7 @@ class CircuitBoard {
     })
     await dischargeObj.save()
     debug(`'${this.name}' discharge d:${dischargeObj._id}`, payload)
-    // TODO: push to powerSource queue
-    this.powerSource.push(dischargeObj)
+    await this.powerSource.push(dischargeObj)
     return dischargeObj
   }
 
@@ -327,7 +350,7 @@ class CircuitBoard {
     await this.DischargeModel.updateRetry(dischargeObj, { type })
     // check if powersource failed retry power source
     if (dischargeObj.powerSource.status === 'failed') {
-      this.powerSource.push(dischargeObj)
+      await this.powerSource.push(dischargeObj)
       return dischargeObj
     }
 
@@ -345,11 +368,12 @@ class CircuitBoard {
 
   async initAndPushElectrons(discharge, electrons, next) {
     await this.stat.init(discharge._id, electrons.length)
-    this.resistors.forEach(resistor => resistor.stat.init(discharge._id, electrons.length))
+    await Promise.mapSeries(this.resistors, async (resistor) => resistor.stat.init(discharge._id, electrons.length))
     debug(`starting pushing ${electrons.length} electrons`)
-    electrons.forEach((electron) => {
-      this.pushElectron(electron, next)
+    await Promise.mapSeries(electrons, async (electron) => {
+      return this.pushElectron(electron, next)
     })
+    return true
   }
 }
 

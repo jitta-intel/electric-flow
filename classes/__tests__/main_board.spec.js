@@ -7,8 +7,8 @@ describe('MainBoard', () => {
     test('should merge all circuit board q and return',  () => {
       const mb = new MainBoard({ name: 'test' })
       mb.circuitBoards = [
-        { queueList: [1, 2, 3]},
-        { queueList: [4, 5, 6]},
+        { queues: [1, 2, 3]},
+        { queues: [4, 5, 6]},
       ]
       expect(mb.getQueues()).toEqual([1, 2, 3, 4, 5, 6])
     })
